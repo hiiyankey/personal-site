@@ -1,26 +1,241 @@
 @import "tailwindcss";
+@import "@radix-ui/colors/gray.css";
+@import "@radix-ui/colors/gray-alpha.css";
+@import "@radix-ui/colors/gray-dark.css";
+@import "@radix-ui/colors/gray-dark-alpha.css";
+
+
+@custom-variant dark (&:where(.dark, .dark *));
+
+::selection {
+    background: var(--color-orange);
+    color: white;
+}
 
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
+    --shadow-border-color: rgba(0, 0, 0, 0.05);
 }
 
 @theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
+    --*: initial;
+    --spacing: 0.25rem;
+    --font-sans: var(--font-geist-sans);
+    --font-mono: var(--font-geist-mono);
+    /* Font size */
+    --text-10: 0.625rem;
+    --text-12: 0.75rem;
+    --text-13: 0.8125rem;
+    --text-14: 0.875rem;
+    --text-15: 0.9375rem;
+    --text-16: 1rem;
+    --text-18: 1.125rem;
+    --text-20: 1.25rem;
+    --text-24: 1.5rem;
+    --text-32: 2rem;
+    --text-40: 2.5rem;
+    --text-48: 3rem;
+    --text-56: 3.5rem;
+    --text-64: 4rem;
+    /* Font weight */
+    --font-weight-400: 400;
+    --font-weight-500: 500;
+    --font-weight-600: 600;
+    --font-weight-700: 700;
+    --font-weight-800: 800;
+    /* Line height */
+    --leading-12: 0.75rem;
+    --leading-16: 1rem;
+    --leading-20: 1.25rem;
+    --leading-24: 1.5rem;
+    --leading-28: 1.75rem;
+    --leading-32: 2rem;
+    --leading-40: 2.5rem;
+    --leading-48: 3rem;
+    --leading-56: 3.5rem;
+    /* Radius */
+    --radius-2: 2px;
+    --radius-4: 4px;
+    --radius-6: 6px;
+    --radius-8: 8px;
+    --radius-12: 12px;
+    --radius-16: 16px;
+    --radius-24: 24px;
+    --radius-32: 32px;
+    --radius-full: 9999px;
+    /* Shadows */
+    --shadow-border: 0 0 0 1px var(--shadow-border-color);
+    --shadow-border-inset: inset 0 0 0 1px var(--shadow-border-color, rgba(0, 0, 0, 0.08));
+    --shadow-small: 0px 2px 2px rgba(0, 0, 0, 0.04);
+    --shadow-border-small: var(--shadow-border), var(--shadow-small);
+    --shadow-medium:
+        0px 2px 2px rgba(0, 0, 0, 0.04), 0px 8px 8px -8px rgba(0, 0, 0, 0.04);
+    --shadow-border-medium: var(--shadow-border), var(--shadow-medium);
+    --shadow-large:
+        0px 2px 2px rgba(0, 0, 0, 0.04), 0px 8px 16px -4px rgba(0, 0, 0, 0.04);
+    --shadow-border-large: var(--shadow-border), var(--shadow-large);
+    --color-orange: #ff670d;
+    --color-red: #ff4951;
+    --color-orange-bg: #ff670d0f;
+    --color-yellow: #ffcc1f;
+    --color-blue: #0080f8;
+    --color-green: #00ce7c;
+    --color-purple: #bc85ff;
+    /* Gray */
+    --color-black: #000;
+    --color-white: #fff;
+    --color-bg: var(--color-gray-1);
+    --color-fg: var(--color-gray-12);
+    --color-gray-1: var(--gray-1);
+    --color-gray-2: var(--gray-2);
+    --color-gray-3: var(--gray-3);
+    --color-gray-4: var(--gray-4);
+    --color-gray-5: var(--gray-5);
+    --color-gray-6: var(--gray-6);
+    --color-gray-7: var(--gray-7);
+    --color-gray-8: var(--gray-8);
+    --color-gray-9: var(--gray-9);
+    --color-gray-10: var(--gray-10);
+    --color-gray-11: var(--gray-11);
+    --color-gray-12: var(--gray-12);
+    /* Gray Alpha */
+    --color-gray-a1: var(--gray-a1);
+    --color-gray-a2: var(--gray-a2);
+    --color-gray-a3: var(--gray-a3);
+    --color-gray-a4: var(--gray-a4);
+    --color-gray-a5: var(--gray-a5);
+    --color-gray-a6: var(--gray-a6);
+    --color-gray-a7: var(--gray-a7);
+    --color-gray-a8: var(--gray-a8);
+    --color-gray-a9: var(--gray-a9);
+    --color-gray-a10: var(--gray-a10);
+    --color-gray-a11: var(--gray-a11);
+    --color-gray-a12: var(--gray-a12);
+    /* Focus */
+    --color-focus: var(--color-orange);
+    --focus-ring: 2px solid var(--color-focus);
+    /* Breakpoints */
+    --breakpoint-*: initial;
+    --breakpoint-sm: 960px;
+    /* Motion */
+    --animate-blink: blink 1.2s ease infinite;
+    --animate-fade-in: fade-in 250ms ease-in-out forwards;
+    --ease-swift: cubic-bezier(0.23, 0.88, 0.26, 0.92);
+    --ease-overlay: cubic-bezier(0.175, 0.885, 0.32, 1.1);
+
+    @keyframes blink {
+        0% {
+            opacity: 1;
+        }
+
+        40% {
+            opacity: 0;
+        }
+
+        60% {
+            opacity: 1;
+        }
+
+        100% {
+            opacity: 1;
+        }
+    }
+
+    @keyframes fade-in {
+        0% {
+            opacity: 0;
+        }
+
+        100% {
+            opacity: 1;
+        }
+    }
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
+.dark {
+    --shadow-border-color: var(--color-gray-3);
 }
 
 body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+    @apply bg-bg text-fg font-sans;
+}
+
+/* Utilities */
+@layer components {
+    .gesture-grabbing {
+        cursor: grabbing;
+        user-select: none;
+        -webkit-user-select: none;
+
+        * {
+            pointer-events: none;
+            user-select: none;
+            -webkit-user-select: none;
+        }
+    }
+
+    .gesture-resizing {
+        cursor: ew-resize;
+        user-select: none;
+        -webkit-user-select: none;
+
+        * {
+            pointer-events: none;
+            user-select: none;
+            -webkit-user-select: none;
+        }
+    }
+
+    .flex-center {
+        @apply flex items-center justify-center;
+    }
+
+    .grid-stack {
+        @apply grid;
+        place-items: center center;
+
+        >* {
+            grid-area: 1 / 1;
+        }
+    }
+
+    .truncate {
+        @apply overflow-hidden whitespace-nowrap;
+        text-overflow: ellipsis;
+    }
+
+    .translate-center-x {
+        @apply left-[50%] -translate-x-1/2;
+    }
+
+    .translate-z-0 {
+        transform: translateZ(0);
+    }
+
+    .translate-center-y {
+        @apply top-[50%] -translate-y-1/2;
+    }
+
+    .translate-center {
+        @apply top-[50%] left-[50%] -translate-x-1/2 -translate-y-1/2;
+    }
+
+    .bleed {
+        width: 100vw;
+        position: relative;
+        left: 50%;
+        right: 50%;
+        transform: translateX(-50%);
+        max-width: var(--max-width);
+    }
+
+    a,
+    button,
+    input,
+    textarea {
+        outline: 0;
+
+        &:focus-visible {
+            outline: 2px solid var(--color-focus);
+        }
+    }
 }
