@@ -1,0 +1,153 @@
+.gridSystem {
+    --max-width: 960px;
+    --min-width: 250px;
+    /*--horizontal-margin: 1rem;*/
+    --grid-system-width: 100cqw;
+    --guide-color: var(--color-gray-6);
+    --cross-color: var(--color-gray-12);
+    max-width: var(--max-width);
+    min-width: var(--min-width);
+    /*margin-top: var(--guide-width);
+    margin-left: var(--guide-width);*/
+    flex-direction: column;
+    display: flex;
+    position: relative;
+}
+
+.gridSystem:before {
+    inset: 0;
+    /*left: calc(-1 * var(--guide-width));
+    top: calc(-1 * var(--guide-width));*/
+    content: "";
+    /*border: var(--guide-width) solid var(--guide-color);
+    pointer-events: none;*/
+    position: absolute;
+}
+
+@media screen and (max-width: 400px) {
+    .grid {
+        --height: var(--xs-height, var(--sm-height));
+        --grid-rows: var(--xs-grid-rows, var(--sm-grid-rows));
+        --grid-columns: var(--xs-grid-columns, var(--sm-grid-columns));
+    }
+}
+
+@media screen and (min-width: 401px) and (max-width: 600px) {
+    .grid {
+        --height: var(--sm-height);
+        --grid-rows: var(--sm-grid-rows);
+        --grid-columns: var(--sm-grid-columns);
+    }
+}
+
+@media screen and (min-width: 601px) and (max-width: 768px) {
+    .grid {
+        --height: var(--smd-height, var(--md-height, var(--sm-height)));
+        --grid-rows: var(--smd-grid-rows, var(--md-grid-rows, var(--sm-grid-rows)));
+        --grid-columns: var(--smd-grid-columns,
+                var(--md-grid-columns, var(--sm-grid-columns)));
+    }
+}
+
+@media screen and (min-width: 769px) and (max-width: 960px) {
+    .grid {
+        --height: var(--md-height, var(--smd-height, var(--sm-height)));
+        --grid-rows: var(--md-grid-rows, var(--smd-grid-rows, var(--sm-grid-rows)));
+        --grid-columns: var(--md-grid-columns,
+                var(--smd-grid-columns, var(--sm-grid-columns)));
+    }
+}
+
+@media screen and (min-width: 961px) {
+    .grid {
+        --height: var(--lg-height,
+                var(--md-height, var(--smd-height, var(--sm-height))));
+        --grid-rows: var(--lg-grid-rows,
+                var(--md-grid-rows, var(--smd-grid-rows, var(--sm-grid-rows))));
+        --grid-columns: var(--lg-grid-columns,
+                var(--md-grid-columns, var(--smd-grid-columns, var(--sm-grid-columns))));
+    }
+}
+
+
+.grid {
+    --xs-grid-columns: 20;
+    /* 400px / 20px */
+    --sm-grid-columns: 30;
+    /* 600px / 20px */
+    --smd-grid-columns: 38;
+    /* 768px / 20px */
+    --md-grid-columns: 48;
+    /* 960px / 20px */
+    --lg-grid-columns: 48;
+    /* >960px */
+    --xs-grid-rows: 24;
+    --sm-grid-rows: 24;
+    --smd-grid-rows: 24;
+    --md-grid-rows: 24;
+    --lg-grid-rows: 24;
+    --sm-height: calc(var(--width) / var(--grid-columns) * var(--grid-rows));
+    --width: clamp(calc(var(--min-width) - var(--guide-width)), calc(var(--grid-system-width) - var(--guide-width)), calc(var(--max-width) - var(--guide-width)));
+    width: var(--width);
+    height: var(--height);
+    --column-width: calc(var(--width) / var(--grid-columns));
+    --row-height: calc(var(--height) / var(--grid-rows));
+    grid-template-columns: repeat(var(--grid-columns), var(--column-width));
+    grid-template-rows: repeat(var(--grid-rows), var(--row-height));
+    display: grid;
+    position: relative;
+    /*display: grid;
+    height: 480px;
+    width: 960px;
+    grid-template-columns: repeat(var(--columns), 1fr);
+    grid-template-rows: repeat(var(--rows), 1fr);*/
+    border: var(--guide-width) solid var(--guide-color);
+    border-right: none;
+    border-bottom: none;
+    /*position: relative;*/
+}
+
+.gridGuides {
+    display: contents;
+}
+
+.gridGuide {
+    inset: 0px;
+    position: absolute;
+    grid-column-start: var(--x);
+    grid-column-end: span 1;
+    grid-row-start: var(--y);
+    grid-row-end: span 1;
+    border: var(--guide-width) solid var(--guide-color);
+    border-left: none;
+    border-top: none;
+}
+
+.gridCell {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    grid-row: var(--row);
+    grid-column: var(--column)
+}
+
+.cross {
+    /*--guide-width: 1.5px;*/
+    --cross-size: 16px;
+    --cross-color: var(--color-gray-12);
+    --cross-half-size: calc((var(--cross-size) / 2) + var(--guide-width) - 0.5px);
+    width: fit-content;
+    height: fit-content;
+    pointer-events: none;
+    position: absolute;
+    grid-column-start: var(--cross-column);
+    grid-row-start: var(--cross-row);
+    z-index: 2;
+    inset: calc(var(--cross-half-size) * -1)
+}
+
+.crossLine {
+    position: absolute;
+    border: var(--guide-width) solid var(--cross-color);
+    border-width: 0
+}
