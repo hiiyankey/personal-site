@@ -4,7 +4,12 @@ import {
   ArrowTopRightIcon,
   CornerBottomRightIcon,
 } from "@radix-ui/react-icons";
-import { motion, type PanInfo, type Transition } from "motion/react";
+import {
+  type MotionProps,
+  motion,
+  type PanInfo,
+  type Transition,
+} from "motion/react";
 import Image from "next/image";
 import {
   type CSSProperties,
@@ -12,10 +17,12 @@ import {
   useCallback,
   useEffect,
   useRef,
+  useState,
 } from "react";
 import { useMediaQuery } from "@/hooks/use-media-query";
+import useResizeRef from "@/hooks/use-resize-ref";
 import { collections } from "@/lib/constants";
-import { randInt } from "@/lib/math";
+import { clamp, randInt } from "@/lib/math";
 import type { Card } from "@/lib/models";
 import { computeGridArrangement, cx, useIsMobile } from "@/lib/utils";
 import { useCardStore } from "@/store";
@@ -35,8 +42,40 @@ const cardInitial = {
   z: 1,
 };
 
+const invertScale = (scale: number) => {
+  if (scale === 0) return 1;
+  return 1 / scale;
+};
+
 const cardDefaultDimensions = { width: 220, height: 160 };
 const dragContainerPadding = { top: 70, right: 20 };
+
+const fadeInProps: MotionProps = {
+  initial: "initial",
+  animate: "animate",
+  exit: "exit",
+  variants: {
+    initial: ({ i = 0 } = {}) => ({
+      opacity: 0,
+      filter: "blur(4px)",
+      y: 10,
+      transition: { delay: i * 0.05 },
+    }),
+    animate: ({ i = 0, scale = 1 } = {}) => ({
+      opacity: 1,
+      filter: "blur(0px)",
+      y: 0,
+      scale,
+      transition: { delay: i * 0.05 },
+    }),
+    exit: ({ i = 0 } = {}) => ({
+      opacity: 0,
+      filter: "blur(4px)",
+      y: -10,
+      transition: { delay: i * 0.05 },
+    }),
+  },
+};
 
 const MemoizedDraggable = memo(Draggable);
 
@@ -97,7 +136,7 @@ export default function Home() {
   const isMobile = useIsMobile();
   const isMobileSmall = useMediaQuery("(max-width: 639px)");
 
-  const centerScale = 1;
+  const centerScale = isMobile ? 2 : 1.5;
 
   const draggableContainerRefs = useRef(new Map<string, DragContainerRef>());
   const draggableControllerRefs = useRef(
@@ -110,8 +149,83 @@ export default function Home() {
   const cardsContainerRef = useRef<HTMLDivElement>(null);
   const cardsDragContainerRef = useRef<HTMLDivElement>(null);
 
-  // const { ref: containerRef, dimensions } = useResizeRef<HTMLDivElement>();
-  const containerRef = useRef<HTMLDivElement>(null);
+  const { ref: containerRef, dimensions } = useResizeRef<HTMLDivElement>();
+
+  const [cardDimensions, setCardDimensions] = useState<
+    Record<string, { width: number; height: number }>
+  >({});
+  const [resizingCardId, setResizingCardId] = useState<string | null>(null);
+  const resizeStateRef = useRef<{
+    cardId: string;
+    startX: number;
+    startY: number;
+    startWidth: number;
+    startHeight: number;
+    sizeScale: number;
+  } | null>(null);
+
+  const getCardSize = useCallback(
+    (card: Card) => {
+      const base = {
+        width: card.width ?? cardDefaultDimensions.width,
+        height: card.height ?? cardDefaultDimensions.height,
+      };
+      const override = cardDimensions[card.id];
+      return override ?? base;
+    },
+    [cardDimensions]
+  );
+
+  const sizeScale = isMobileSmall ? 0.6 : isMobile ? 0.8 : 1;
+
+  const handleResizeMove = useCallback((e: PointerEvent) => {
+    const state = resizeStateRef.current;
+    if (!state) return;
+
+    const deltaX = (e.clientX - state.startX) / state.sizeScale;
+    const deltaY = (e.clientY - state.startY) / state.sizeScale;
+    const newWidth = clamp(80, 500, state.startWidth + deltaX);
+    const newHeight = clamp(60, 400, state.startHeight + deltaY);
+
+    setCardDimensions((prev) => ({
+      ...prev,
+      [state.cardId]: { width: newWidth, height: newHeight },
+    }));
+  }, []);
+
+  const handleResizeEnd = useCallback(() => {
+    resizeStateRef.current = null;
+    window.removeEventListener("pointermove", handleResizeMove);
+    window.removeEventListener("pointerup", handleResizeEnd);
+    window.removeEventListener("pointercancel", handleResizeEnd);
+  }, [handleResizeMove]);
+
+  const startResizeListeners = useCallback(() => {
+    window.addEventListener("pointermove", handleResizeMove);
+    window.addEventListener("pointerup", handleResizeEnd);
+    window.addEventListener("pointercancel", handleResizeEnd);
+  }, [handleResizeMove, handleResizeEnd]);
+
+  const handleResizeStart = useCallback(
+    (e: React.PointerEvent, cardId: string) => {
+      e.stopPropagation();
+      (e.target as HTMLElement).setPointerCapture(e.pointerId);
+      const card = cards.find((c) => c.id === cardId);
+      if (!card) return;
+      const { width, height } = getCardSize(card);
+      setResizingCardId(cardId);
+      resizeStateRef.current = {
+        cardId,
+        startX: e.clientX,
+        startY: e.clientY,
+        startWidth: width,
+        startHeight: height,
+        sizeScale,
+      };
+      startResizeListeners();
+    },
+    [cards, getCardSize, sizeScale, startResizeListeners]
+  );
   // biome-ignore lint/correctness/useExhaustiveDependencies: shh!
   const getMaxZ = useCallback(() => {
     return (
@@ -670,64 +784,85 @@ export default function Home() {
                       tabIndex={-1}
                       transition={cardTransition}
                     >
-                      <div className="flex h-0 w-full items-center overflow-hidden px-1 opacity-0 transition-[height,opacity] duration-200 group-hover:h-4.5 group-hover:opacity-100">
-                        <h3 className="text-12 uppercase">{card.title}</h3>
-                        <span className="ml-auto block">
-                          <ArrowTopRightIcon />
-                        </span>
+                      <div
+                        className="pointer-events-none flex flex-col items-center justify-center transition-transform duration-200"
+                        style={
+                          selectedCardId === card.id
+                            ? {
+                                transform: `scale(${invertScale(centerScale)})`,
+                              }
+                            : undefined
+                        }
+                      >
+                        <div className="flex h-0 w-full items-center overflow-hidden px-1 opacity-0 transition-[height,opacity] duration-200 group-hover:h-4.5 group-hover:opacity-100">
+                          <h3 className="text-12 uppercase">{card.title}</h3>
+                          <span className="ml-auto block">
+                            <ArrowTopRightIcon />
+                          </span>
+                        </div>
+                        <div className="pointer-events-none overflow-clip rounded-6">
+                          {card.src ? (
+                            <Image
+                              alt={card.title || ""}
+                              className={cx(
+                                "pointer-events-none h-auto w-[calc(var(--size-scale)*var(--width)*1px)] object-contain object-center drop-shadow transition-all duration-200"
+                              )}
+                              data-slot="card-image"
+                              height={getCardSize(card).height}
+                              loading="eager"
+                              priority
+                              src={card.src}
+                              style={
+                                {
+                                  "--width": getCardSize(card).width,
+                                  "--height": getCardSize(card).height,
+                                  "--size-scale": isMobileSmall
+                                    ? 0.6
+                                    : // biome-ignore lint/style/noNestedTernary: shh!
+                                      isMobile
+                                      ? 0.8
+                                      : 1,
+                                } as CSSProperties
+                              }
+                              width={getCardSize(card).width}
+                            />
+                          ) : (
+                            <div
+                              className={cx(
+                                "pointer-events-none h-auto w-[calc(var(--size-scale)*var(--width)*1px)] bg-gray-1 object-contain object-center drop-shadow transition-all duration-200"
+                              )}
+                              style={
+                                {
+                                  "--width": getCardSize(card).width,
+                                  "--height": getCardSize(card).height,
+                                  "--size-scale": isMobileSmall
+                                    ? 0.6
+                                    : // biome-ignore lint/style/noNestedTernary: shh!
+                                      isMobile
+                                      ? 0.8
+                                      : 1,
+                                  height: `${getCardSize(card).height}px`,
+                                } as CSSProperties
+                              }
+                            />
+                          )}
+                          {resizingCardId === card.id && (
+                            <span
+                              aria-live="polite"
+                              className="absolute right-1.5 bottom-1.5 rounded-4 bg-gray-a3 px-1.5 py-0.5 font-mono text-10 text-gray-9"
+                            >
+                              {Math.round(getCardSize(card).width)} ×{" "}
+                              {Math.round(getCardSize(card).height)}
+                            </span>
+                          )}
+                        </div>
                       </div>
-                      <div className="pointer-events-none overflow-clip rounded-6">
-                        {card.src ? (
-                          <Image
-                            alt={card.title || ""}
-                            className={cx(
-                              "pointer-events-none h-auto w-[calc(var(--size-scale)*var(--width)*1px)] object-contain object-center drop-shadow transition-all duration-200"
-                            )}
-                            data-slot="card-image"
-                            height={card.height || cardDefaultDimensions.height}
-                            loading="eager"
-                            priority
-                            src={card.src}
-                            style={
-                              {
-                                "--width":
-                                  card.width || cardDefaultDimensions.width,
-                                "--height":
-                                  card.height || cardDefaultDimensions.height,
-                                "--size-scale": isMobileSmall
-                                  ? 0.6
-                                  : // biome-ignore lint/style/noNestedTernary: shh!
-                                    isMobile
-                                    ? 0.8
-                                    : 1,
-                              } as CSSProperties
-                            }
-                            width={card.width || cardDefaultDimensions.width}
-                          />
-                        ) : (
-                          <div
-                            className={cx(
-                              "pointer-events-none h-auto w-[calc(var(--size-scale)*var(--width)*1px)] bg-gray-1 object-contain object-center drop-shadow transition-all duration-200"
-                            )}
-                            style={
-                              {
-                                "--width":
-                                  card.width || cardDefaultDimensions.width,
-                                "--height":
-                                  card.height || cardDefaultDimensions.height,
-                                "--size-scale": isMobileSmall
-                                  ? 0.6
-                                  : // biome-ignore lint/style/noNestedTernary: shh!
-                                    isMobile
-                                    ? 0.8
-                                    : 1,
-                                height: `${card.height || cardDefaultDimensions.height}px`,
-                              } as CSSProperties
-                            }
-                          />
-                        )}
-                      </div>
-                      <span className="absolute right-0 bottom-0 scale-50 opacity-0 transition-[transform,opacity] duration-200 group-hover:scale-100 group-hover:opacity-100">
+                      <span
+                        aria-label={`Resize ${card.title ?? "card"}`}
+                        className="pointer-events-auto absolute right-0 bottom-0 z-10 scale-50 cursor-nwse-resize opacity-0 transition-[transform,opacity] duration-200 group-hover:scale-100 group-hover:opacity-100"
+                        onPointerDown={(e) => handleResizeStart(e, card.id)}
+                        role="button"
+                      >
                         <CornerBottomRightIcon />
                       </span>
                     </MemoizedDraggable>
@@ -738,7 +873,7 @@ export default function Home() {
           </div>
         </div>
       </main>
-      <footer className="h-16 flex-center">
+      <footer className="flex h-16 items-center justify-center gap-2">
         <span className="text-14 text-gray-11">300126_022132.250_UTC</span>
       </footer>
     </div>
