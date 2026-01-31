@@ -1,6 +1,9 @@
 "use client";
 
-import { ArrowTopRightIcon } from "@radix-ui/react-icons";
+import {
+  ArrowTopRightIcon,
+  CornerBottomRightIcon,
+} from "@radix-ui/react-icons";
 import { motion, type PanInfo, type Transition } from "motion/react";
 import Image from "next/image";
 import {
@@ -32,7 +35,7 @@ const cardInitial = {
   z: 1,
 };
 
-const cardDefaultDimensions = { width: 160, height: 220 };
+const cardDefaultDimensions = { width: 220, height: 160 };
 const dragContainerPadding = { top: 70, right: 20 };
 
 const MemoizedDraggable = memo(Draggable);
@@ -64,15 +67,6 @@ const getAttribute = (
 const getIdAttribute = (e: { dataset: DOMStringMap } | null) =>
   getAttribute(e, "id");
 
-const directionKeys = [
-  "ArrowLeft",
-  "ArrowRight",
-  "ArrowUp",
-  "ArrowDown",
-  "Home",
-  "End",
-];
-
 //////////////////////////////
 
 export default function Home() {
@@ -95,7 +89,6 @@ export default function Home() {
   const store = useCardStore();
   const selectedCardId = useCardStore((s) => s.selectedCardId);
   const collectionKey = useCardStore((s) => s.collection);
-  const setZoomEnabled = useCardStore((s) => s.setZoomEnabled);
   const setSelectedCardId = useCardStore((s) => s.setSelectedCardId);
 
   const collection = collections[collectionKey];
@@ -196,31 +189,6 @@ export default function Home() {
     focusedCardIdRef.current = id;
   }, []);
 
-  const getIndexById = useCallback(
-    (id: string | null | undefined) => {
-      if (!id) {
-        return null;
-      }
-      return cards.findIndex((card) => card.id === id);
-    },
-    [cards]
-  );
-
-  const getNextFocusId = useCallback(
-    (nextIndex: number) => {
-      if (!cards.length) {
-        return null;
-      }
-      if (nextIndex < 0) {
-        return cards.at(-1)?.id ?? null;
-      }
-      if (nextIndex >= cards.length) {
-        return cards[0]?.id ?? null;
-      }
-      return cards[nextIndex]?.id ?? null;
-    },
-    [cards]
-  );
   // biome-ignore lint/correctness/useExhaustiveDependencies: shh!
   const handleOrganize = useCallback(() => {
     const container = cardsDragContainerRef.current;
@@ -395,7 +363,6 @@ export default function Home() {
         ?.center(containerRef.current!, centerScale);
 
       if (!target?.dragging) {
-        setZoomEnabled(true);
         setSelectedCardId(id);
 
         selectedCardIdRef.current = id;
@@ -408,7 +375,6 @@ export default function Home() {
       draggableContainerRefs,
       draggableControllerRefs,
       containerRef,
-      setZoomEnabled,
       setSelectedCardId,
       centerScale,
       placeOnTop,
@@ -446,11 +412,7 @@ export default function Home() {
     const handleKeyDown = (e: KeyboardEvent) => {
       if (selectedCardId) {
         if (e.key === "Escape") {
-          if (store.isZoomed) {
-            store.setZoomed(false);
-          } else {
-            handleDeselectCard();
-          }
+          handleDeselectCard();
           return;
         }
 
@@ -506,24 +468,6 @@ export default function Home() {
     [draggableControllerRefs]
   );
 
-  const handleKeyDown = useCallback(
-    (e: React.KeyboardEvent<HTMLDivElement>) => {
-      const id = getIdAttribute(e.currentTarget);
-      if (id === null || id === selectedCardId) {
-        return;
-      }
-
-      if (e.target !== e.currentTarget) {
-        return;
-      }
-
-      if (e.key === "Enter" || e.key === " ") {
-        handleSelectCard(id);
-      }
-    },
-    [handleSelectCard, selectedCardId]
-  );
-
   const handleCardClick = useCallback(
     (e: React.MouseEvent<HTMLDivElement>) => {
       const id = getIdAttribute(e.currentTarget);
@@ -538,8 +482,6 @@ export default function Home() {
       e.stopPropagation();
 
       handleSelectCard(id);
-
-      store.setZoomed(false);
     },
     [handleSelectCard, store, selectedCardId]
   );
@@ -551,41 +493,6 @@ export default function Home() {
       }
     },
     [handleDeselectCard]
-  );
-
-  const handleListKeyDown = useCallback(
-    (e: React.KeyboardEvent<HTMLDivElement>) => {
-      const count = cards.length;
-      if (!count) {
-        return;
-      }
-
-      if (directionKeys.includes(e.key)) {
-        e.preventDefault();
-        e.stopPropagation();
-      }
-
-      const i = getIndexById(focusedCardIdRef.current);
-      if (e.key === "Home") {
-        focusById(cards[0]?.id ?? null);
-        return;
-      }
-      if (e.key === "End") {
-        focusById(cards.at(-1)?.id ?? null);
-        return;
-      }
-      if (e.key === "ArrowLeft" || e.key === "ArrowUp") {
-        const nextId = getNextFocusId((i ?? 0) - 1);
-        focusById(nextId);
-        return;
-      }
-      if (e.key === "ArrowRight" || e.key === "ArrowDown") {
-        const nextId = getNextFocusId((i ?? 0) + 1);
-        focusById(nextId);
-        return;
-      }
-    },
-    [cards, getNextFocusId, focusById, getIndexById]
   );
 
   const handleListFocus = useCallback(
@@ -616,7 +523,7 @@ export default function Home() {
   }, []);
 
   return (
-    <div className="min-h-dvh w-screen">
+    <div className="min-h-dvh">
       <header>
         {/** biome-ignore lint/a11y/noSvgWithoutTitle: shh! */}
         <svg height="24px" width="100%">
@@ -655,7 +562,7 @@ export default function Home() {
           <div className="ml-auto flex items-center gap-1">
             <motion.button
               className="size-6 flex-center select-none rounded-full bg-gray-3"
-              onClick={handleSpreadOut}
+              onClick={() => handleSpreadOut({ stagger: 5 })}
               type="button"
               whileTap={{ scale: 0.96 }}
             >
@@ -692,7 +599,7 @@ export default function Home() {
         </Container>
         <div
           className="bleed @container relative flex-center px-4 sm:px-8"
-          style={{ "--max-width": "100vw" } as React.CSSProperties}
+          style={{ "--max-width": "960px" } as React.CSSProperties}
         >
           <Grid.System guideWidth={1}>
             <Grid columns={grid.columns} rows={grid.rows}>
@@ -704,17 +611,20 @@ export default function Home() {
           </Grid.System>
 
           <div className="absolute inset-0">
+            {/** biome-ignore lint/a11y/noNoninteractiveElementInteractions: shh! */}
+            {/** biome-ignore lint/a11y/noStaticElementInteractions: shh! */}
+            {/** biome-ignore lint/a11y/useKeyWithClickEvents: shh! */}
             <div
               className={cx("relative row-3 flex h-full items-start lg:row-1")}
               onClick={handleContainerClick}
               ref={containerRef}
             >
+              {/** biome-ignore lint/a11y/noNoninteractiveElementInteractions: shh! */}
               <div
                 aria-label={`${collectionKey} cards List`}
                 className="pointer-events-none absolute inset-0 transform-gpu focus-visible:outline-none"
                 onBlur={handleListBlur}
                 onFocus={handleListFocus}
-                onKeyDown={handleListKeyDown}
                 ref={cardsContainerRef}
                 role="list"
                 tabIndex={0}
@@ -734,7 +644,7 @@ export default function Home() {
                         selectedCardId === card.id ? "true" : undefined
                       }
                       className={cx(
-                        "focus-dashed group pointer-events-auto absolute z-(--z) flex flex-col items-center justify-center rounded-6 bg-gray-2/90 p-1 shadow-border-medium outline-offset-4 backdrop-blur-[12px] transition-[filter] duration-200 will-change-transform",
+                        "focus-dashed group pointer-events-auto absolute z-(--z) flex flex-col items-center justify-center rounded-[10px] bg-gray-2/90 p-1 shadow-border-medium outline-offset-4 backdrop-blur-[12px] transition-[filter] duration-200 will-change-transform",
                         selectedCardId &&
                           selectedCardId !== card.id &&
                           "opacity-40 blur-lg",
@@ -749,52 +659,77 @@ export default function Home() {
                       dragTransition={cardDragTransition}
                       id={card.id}
                       index={index}
-                      inert={store.isZoomed && selectedCardId !== card.id}
                       initial={cardInitial}
                       key={card.id}
                       onClick={handleCardClick}
                       onDragEnd={handleDragEnd}
                       onDragStart={handleDragStart}
                       onDragTransitionEnd={handleDragTransitionEnd}
-                      onKeyDown={handleKeyDown}
                       ref={handleDragContainerRef}
                       role="listitem"
                       tabIndex={-1}
                       transition={cardTransition}
                     >
-                      <div className="flex h-4.5 w-full items-center px-1">
-                        <h3 className="text-14">{card.title}</h3>
+                      <div className="flex h-0 w-full items-center overflow-hidden px-1 opacity-0 transition-[height,opacity] duration-200 group-hover:h-4.5 group-hover:opacity-100">
+                        <h3 className="text-12 uppercase">{card.title}</h3>
                         <span className="ml-auto block">
                           <ArrowTopRightIcon />
                         </span>
                       </div>
-                      <div className="pointer-events-none overflow-clip rounded-4">
-                        <Image
-                          alt={card.title || ""}
-                          className={cx(
-                            "pointer-events-none h-auto w-[calc(var(--size-scale)*var(--width)*1px)] object-contain object-center drop-shadow transition-all duration-200"
-                          )}
-                          data-slot="card-image"
-                          height={card.height || cardDefaultDimensions.height}
-                          loading="eager"
-                          priority
-                          src={card.src}
-                          style={
-                            {
-                              "--width":
-                                card.width || cardDefaultDimensions.width,
-                              "--height":
-                                card.height || cardDefaultDimensions.height,
-                              "--size-scale": isMobileSmall
-                                ? 0.6
-                                : isMobile
-                                  ? 0.8
-                                  : 1,
-                            } as CSSProperties
-                          }
-                          width={card.width || cardDefaultDimensions.width}
-                        />
+                      <div className="pointer-events-none overflow-clip rounded-6">
+                        {card.src ? (
+                          <Image
+                            alt={card.title || ""}
+                            className={cx(
+                              "pointer-events-none h-auto w-[calc(var(--size-scale)*var(--width)*1px)] object-contain object-center drop-shadow transition-all duration-200"
+                            )}
+                            data-slot="card-image"
+                            height={card.height || cardDefaultDimensions.height}
+                            loading="eager"
+                            priority
+                            src={card.src}
+                            style={
+                              {
+                                "--width":
+                                  card.width || cardDefaultDimensions.width,
+                                "--height":
+                                  card.height || cardDefaultDimensions.height,
+                                "--size-scale": isMobileSmall
+                                  ? 0.6
+                                  : // biome-ignore lint/style/noNestedTernary: shh!
+                                    isMobile
+                                    ? 0.8
+                                    : 1,
+                              } as CSSProperties
+                            }
+                            width={card.width || cardDefaultDimensions.width}
+                          />
+                        ) : (
+                          <div
+                            className={cx(
+                              "pointer-events-none h-auto w-[calc(var(--size-scale)*var(--width)*1px)] bg-gray-1 object-contain object-center drop-shadow transition-all duration-200"
+                            )}
+                            style={
+                              {
+                                "--width":
+                                  card.width || cardDefaultDimensions.width,
+                                "--height":
+                                  card.height || cardDefaultDimensions.height,
+                                "--size-scale": isMobileSmall
+                                  ? 0.6
+                                  : // biome-ignore lint/style/noNestedTernary: shh!
+                                    isMobile
+                                    ? 0.8
+                                    : 1,
+                                height: `${card.height || cardDefaultDimensions.height}px`,
+                              } as CSSProperties
+                            }
+                          />
+                        )}
                       </div>
+                      <span className="absolute right-0 bottom-0 scale-50 opacity-0 transition-[transform,opacity] duration-200 group-hover:scale-100 group-hover:opacity-100">
+                        <CornerBottomRightIcon />
+                      </span>
                     </MemoizedDraggable>
                   );
                 })}
