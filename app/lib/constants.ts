@@ -45,6 +45,7 @@ export const collections = Object.fromEntries(
       cards: value.cards.map((card: any, index) => ({
         ...card,
         id: card.id || `${key}-${index}`,
+        slug: card.title.toLowerCase().split(" ").join("-"),
       })),
     },
   ])

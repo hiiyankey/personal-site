@@ -11,6 +11,7 @@ import {
   type Transition,
 } from "motion/react";
 import Image from "next/image";
+import Link from "next/link";
 import {
   type CSSProperties,
   memo,
@@ -466,9 +467,7 @@ export default function Home() {
       }
 
       placeOnTop(id);
-      draggableControllerRefs.current
-        .get(id)
-        ?.center(containerRef.current!, 1);
+      draggableControllerRefs.current.get(id)?.center(containerRef.current!, 1);
 
       if (!target?.dragging) {
         setSelectedCardId(id);
@@ -650,16 +649,13 @@ export default function Home() {
           <h3 className="mb-6 text-24 leading-28">Hello</h3>
           <div className="flex flex-col space-y-4">
             <p className="text-18 leading-[auto]">
-              My name is Emmanuel. I work as a Design Engineer at Vercel on our
-              platform, design system, marketing pages, and Next.js Dev Tools.
-              Previously, I was at The Browser Company designing and building
-              the Arc browser. interactions, engineering, and design
+              My name is Emmanuel. I work as a Design Engineer crafting details
+              and many things on screens like design system, marketing pages.
+              Focused on honing my craft through
             </p>
             <p className="text-18 leading-[auto]">
-              I have written acclaimed design essays like Invisible Details of
-              Interaction Design and shipped open source software like cmdk that
-              is downloaded millions of times per week to power command menu
-              interfaces for the most modern productivity apps on the web.
+              When not coding, I write design essays, remix and prototype
+              interactions for apps on the web.
             </p>
           </div>
         </Container>
@@ -718,7 +714,7 @@ export default function Home() {
                         "focus-dashed group pointer-events-auto absolute z-(--z) flex flex-col items-center justify-center rounded-6 bg-gray-2/90 p-1 shadow-border-medium outline-offset-4 backdrop-blur-[12px] transition-[filter] duration-200 will-change-transform",
                         selectedCardId &&
                           selectedCardId !== card.id &&
-                          "opacity-40 blur-lg pointer-events-none"
+                          "pointer-events-none opacity-40 blur-lg"
                       )}
                       data-id={card.id}
                       data-index={index}
@@ -750,9 +746,13 @@ export default function Home() {
                       >
                         <div className="flex h-0 w-full items-center justify-between overflow-hidden px-1 opacity-0 transition-[height,opacity] duration-200 group-hover:h-4.5 group-hover:opacity-100">
                           <h3 className="text-12 uppercase">{card.title}</h3>
-                          <span className="ml-auto block">
-                            <ArrowTopRightIcon />
-                          </span>
+                          {collectionKey === "prototypes" && (
+                            <Link href={`/craft/${card.slug}`}>
+                              <span className="ml-auto block">
+                                <ArrowTopRightIcon />
+                              </span>
+                            </Link>
+                          )}
                         </div>
                         <div
                           className={cx(
@@ -818,14 +818,14 @@ export default function Home() {
                           )}
                         </div>
                       </div>
-                      <span
+                      <button
                         aria-label={`Resize ${card.title ?? "card"}`}
                         className="pointer-events-auto absolute right-0 bottom-0 z-10 scale-50 cursor-nwse-resize opacity-0 transition-[transform,opacity] duration-200 group-hover:scale-100 group-hover:opacity-100"
                         onPointerDown={(e) => handleResizeStart(e, card.id)}
                         role="button"
                       >
                         <CornerBottomRightIcon />
-                      </span>
+                      </button>
                     </MemoizedDraggable>
                   );
                 })}
@@ -835,7 +835,7 @@ export default function Home() {
         </div>
       </main>
       <footer className="flex h-16 items-center justify-center gap-2">
-        <span className="text-14 text-gray-11">300126_022132.250_UTC</span>
+        <span className="text-14 text-gray-9">300126_022132.250_UTC</span>
       </footer>
     </div>
   );
