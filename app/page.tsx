@@ -42,11 +42,6 @@ const cardInitial = {
   z: 1,
 };
 
-const invertScale = (scale: number) => {
-  if (scale === 0) return 1;
-  return 1 / scale;
-};
-
 const cardDefaultDimensions = { width: 220, height: 160 };
 const dragContainerPadding = { top: 70, right: 20 };
 
@@ -136,8 +131,6 @@ export default function Home() {
   const isMobile = useIsMobile();
   const isMobileSmall = useMediaQuery("(max-width: 639px)");
 
-  const centerScale = isMobile ? 2 : 1.5;
-
   const draggableContainerRefs = useRef(new Map<string, DragContainerRef>());
   const draggableControllerRefs = useRef(
     new Map<string, DraggableController>()
@@ -194,6 +187,7 @@ export default function Home() {
   }, []);
 
   const handleResizeEnd = useCallback(() => {
+    setResizingCardId(null);
     resizeStateRef.current = null;
     window.removeEventListener("pointermove", handleResizeMove);
     window.removeEventListener("pointerup", handleResizeEnd);
@@ -474,7 +468,7 @@ export default function Home() {
       placeOnTop(id);
       draggableControllerRefs.current
         .get(id)
-        ?.center(containerRef.current!, centerScale);
+        ?.center(containerRef.current!, 1);
 
       if (!target?.dragging) {
         setSelectedCardId(id);
@@ -490,7 +484,6 @@ export default function Home() {
       draggableControllerRefs,
       containerRef,
       setSelectedCardId,
-      centerScale,
       placeOnTop,
     ]
   );
@@ -514,47 +507,6 @@ export default function Home() {
     [store, draggableControllerRefs, placeOnTop]
   );
 
-  // biome-ignore lint/correctness/useExhaustiveDependencies: shh!
-  useEffect(() => {
-    const focusWithinRef = containerRef.current?.contains(
-      document.activeElement
-    );
-    if (!focusWithinRef) {
-      return;
-    }
-
-    const handleKeyDown = (e: KeyboardEvent) => {
-      if (selectedCardId) {
-        if (e.key === "Escape") {
-          handleDeselectCard();
-          return;
-        }
-
-        if (e.key === "ArrowLeft" || e.key === "ArrowRight") {
-          const direction = e.key === "ArrowLeft" ? -1 : 1;
-          const selectedIndex = cards.findIndex(
-            (card) => card.id === selectedCardId
-          );
-          const nextIndex =
-            (selectedIndex + direction + cards.length) % cards.length;
-          const nextId = cards[nextIndex].id;
-
-          handleSelectCard(nextId);
-        }
-      }
-    };
-
-    window.addEventListener("keydown", handleKeyDown);
-    return () => window.removeEventListener("keydown", handleKeyDown);
-  }, [
-    selectedCardId,
-    handleDeselectCard,
-    handleSpreadOut,
-    store,
-    containerRef,
-    cards,
-    handleSelectCard,
-  ]);
   // biome-ignore lint/correctness/useExhaustiveDependencies: shh!
   const handleDragContainerRef = useCallback(
     (e: HTMLElement | null) => {
@@ -729,7 +681,7 @@ export default function Home() {
             {/** biome-ignore lint/a11y/noStaticElementInteractions: shh! */}
             {/** biome-ignore lint/a11y/useKeyWithClickEvents: shh! */}
             <div
-              className={cx("relative row-3 flex h-full items-start lg:row-1")}
+              className={cx("relative row-2 flex h-full items-start sm:row-1")}
               onClick={handleContainerClick}
               ref={containerRef}
             >
@@ -745,10 +697,15 @@ export default function Home() {
               >
                 <div
                   aria-hidden="true"
-                  className="card-drag-container pointer-events-none absolute bottom-0 left-0"
+                  className="pointer-events-none absolute inset-0"
                   ref={cardsDragContainerRef}
                   role="presentation"
-                  style={dragContainerPadding}
+                  style={{
+                    top: dragContainerPadding.top,
+                    right: dragContainerPadding.right,
+                    bottom: 0,
+                    left: 0,
+                  }}
                 />
 
                 {cards.map((card, index) => {
@@ -758,11 +715,10 @@ export default function Home() {
                         selectedCardId === card.id ? "true" : undefined
                       }
                       className={cx(
-                        "focus-dashed group pointer-events-auto absolute z-(--z) flex flex-col items-center justify-center rounded-[10px] bg-gray-2/90 p-1 shadow-border-medium outline-offset-4 backdrop-blur-[12px] transition-[filter] duration-200 will-change-transform",
+                        "focus-dashed group pointer-events-auto absolute z-(--z) flex flex-col items-center justify-center rounded-6 bg-gray-2/90 p-1 shadow-border-medium outline-offset-4 backdrop-blur-[12px] transition-[filter] duration-200 will-change-transform",
                         selectedCardId &&
                           selectedCardId !== card.id &&
-                          "opacity-40 blur-lg",
-                        selectedCardId && "pointer-events-none"
+                          "opacity-40 blur-lg pointer-events-none"
                       )}
                       data-id={card.id}
                       data-index={index}
@@ -785,22 +741,27 @@ export default function Home() {
                       transition={cardTransition}
                     >
                       <div
-                        className="pointer-events-none flex flex-col items-center justify-center transition-transform duration-200"
-                        style={
+                        className={cx(
+                          "flex min-h-0 flex-col items-center justify-center transition-transform duration-200",
                           selectedCardId === card.id
-                            ? {
-                                transform: `scale(${invertScale(centerScale)})`,
-                              }
-                            : undefined
-                        }
+                            ? "pointer-events-auto w-full flex-1"
+                            : "pointer-events-none"
+                        )}
                       >
-                        <div className="flex h-0 w-full items-center overflow-hidden px-1 opacity-0 transition-[height,opacity] duration-200 group-hover:h-4.5 group-hover:opacity-100">
+                        <div className="flex h-0 w-full items-center justify-between overflow-hidden px-1 opacity-0 transition-[height,opacity] duration-200 group-hover:h-4.5 group-hover:opacity-100">
                           <h3 className="text-12 uppercase">{card.title}</h3>
                           <span className="ml-auto block">
                             <ArrowTopRightIcon />
                           </span>
                         </div>
-                        <div className="pointer-events-none overflow-clip rounded-6">
+                        <div
+                          className={cx(
+                            "overflow-clip rounded-4",
+                            selectedCardId === card.id
+                              ? "pointer-events-auto"
+                              : "pointer-events-none"
+                          )}
+                        >
                           {card.src ? (
                             <Image
                               alt={card.title || ""}
@@ -849,7 +810,7 @@ export default function Home() {
                           {resizingCardId === card.id && (
                             <span
                               aria-live="polite"
-                              className="absolute right-1.5 bottom-1.5 rounded-4 bg-gray-a3 px-1.5 py-0.5 font-mono text-10 text-gray-9"
+                              className="absolute right-1.5 bottom-1.5 rounded-4 bg-gray-3 px-1.5 py-0.5 font-mono text-10 text-gray-9"
                             >
                               {Math.round(getCardSize(card).width)} ×{" "}
                               {Math.round(getCardSize(card).height)}
