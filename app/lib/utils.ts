@@ -107,3 +107,12 @@ export function useIsMobile() {
 
   return isMobile;
 }
+
+export function formatDate(year: string) {
+  const date = new Date(year);
+  const opts = { year: "numeric" } as const;
+
+  return new Intl.DateTimeFormat("en-US", { ...opts, month: "long" }).format(
+    date
+  );
+}
