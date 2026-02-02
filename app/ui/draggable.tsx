@@ -177,7 +177,9 @@ function Draggable({
         return;
       }
 
-      controls.start(beforeFocus.current);
+      controls.start(
+        beforeFocus.current as unknown as Parameters<typeof controls.start>[0]
+      );
       isFocused.current = false;
     },
     controls,
