@@ -6,4 +6,5 @@ export interface Card {
   width?: number;
   height?: number;
   slug: string;
+  content: React.ComponentType;
 }

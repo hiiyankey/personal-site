@@ -163,7 +163,7 @@ function Draggable({
             const maxY = containerRect.height - elHeight - padding;
 
             return {
-              rotate: rotate ?? randInt(-35, 35),
+              rotate: rotate ?? randInt(-15, 15),
               x: clamp(minX, maxX, x + randInt(-dist, dist)),
               y: clamp(minY, maxY, y + randInt(-dist, dist)),
               z: 1,

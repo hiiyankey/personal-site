@@ -7,7 +7,7 @@ export function Stage({ children, className }: React.ComponentProps<"div">) {
   return (
     <div
       className={cx(
-        "flex-center rounded-12 bg-gray-2 px-8 py-16 shadow-border-inset",
+        "min-h-50 flex-center rounded-12 bg-gray-2 shadow-border-inset",
         className
       )}
       data-stage

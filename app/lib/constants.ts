@@ -1,33 +1,34 @@
+import { ElasticSlider } from "@/ui/prototypes/elastic-slider";
+
 export const baseCollections = {
   prototypes: {
     cards: [
       {
         year: "1959-03-06",
         title: "Line Graph",
+        src: "/test-image.jpg",
         width: 280,
       },
       {
         year: "1959-03-06",
         title: "Minimap",
+        src: "/test-image.jpg",
         width: 240,
         height: 180,
       },
       {
         year: "1959-03-06",
         title: "Motion Blur",
+        src: "/test-image.jpg",
         width: 240,
       },
       {
-        year: "1959-03-06",
+        year: "2026-02-02",
         title: "Elastic Slider",
-        width: 270,
-        height: 150,
-      },
-      {
-        year: "1959-03-06",
-        title: "Test Image",
         src: "/test-image.jpg",
-        width: 320,
+        width: 290,
+        height: 170,
+        content: ElasticSlider,
       },
     ],
   },

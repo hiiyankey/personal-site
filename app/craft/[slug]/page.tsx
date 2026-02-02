@@ -17,8 +17,8 @@ export default async function Page({
   const index = cards.findIndex((card) => card.slug === slug);
   const card = cards[index];
   const previous = index > 0 ? cards[index - 1] : null;
-
   const next = index < cards.length - 1 ? cards[index + 1] : null;
+  const Content = card?.content;
 
   return (
     <div className="min-h-dvh">
@@ -28,7 +28,7 @@ export default async function Page({
             <Link className="flex items-center text-14 text-gray-11" href="/">
               <span className="mr-2">
                 <ResetIcon />
-              </span>{" "}
+              </span>
               Back
             </Link>
           </div>
@@ -38,7 +38,7 @@ export default async function Page({
             <span className="text-gray-11">{formatDate(card.year)}</span>
           </div>
 
-          <Stage>{card.title}</Stage>
+          <Stage>{Content && <Content />}</Stage>
 
           <footer>
             <div className="my-10 h-px w-full bg-gray-6" />

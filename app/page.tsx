@@ -137,7 +137,6 @@ export default function Home() {
     new Map<string, DraggableController>()
   );
 
-  const focusedCardIdRef = useRef<string | null>(null);
   const selectedCardIdRef = useRef<string | null>(null);
   const selectedCardContainerRef = useRef<HTMLElement | null>(null);
   const cardsContainerRef = useRef<HTMLDivElement>(null);
@@ -284,20 +283,6 @@ export default function Home() {
     [draggableContainerRefs, getMaxZ, compactZIndices]
   );
 
-  const focusById = useCallback((id: string | null) => {
-    if (!id) {
-      return;
-    }
-
-    const el = draggableContainerRefs.current.get(id)?.e;
-    if (!el) {
-      return;
-    }
-
-    el.focus();
-    focusedCardIdRef.current = id;
-  }, []);
-
   // biome-ignore lint/correctness/useExhaustiveDependencies: shh!
   const handleOrganize = useCallback(() => {
     const container = cardsDragContainerRef.current;
@@ -351,7 +336,7 @@ export default function Home() {
       draggable.controls.start({
         x: left,
         y: top + dragContainerPadding.top,
-        rotate: pos.fit ? randInt(-5, 5) : randInt(-35, 35),
+        rotate: pos.fit ? randInt(-5, 5) : randInt(-15, 15),
         transition: { type: "spring", stiffness: 500, damping: 80 },
       });
     }
@@ -454,58 +439,6 @@ export default function Home() {
     handleSpreadOut({ stagger: 5 });
   }, [collectionKey, containerRef, handleSpreadOut]);
 
-  const handleSelectCard = useCallback(
-    (id: string) => {
-      const target = draggableContainerRefs.current.get(id);
-      if (target?.dragging) {
-        return;
-      }
-
-      const focusedId = selectedCardIdRef.current;
-      if (focusedId && focusedId !== id) {
-        draggableControllerRefs.current.get(focusedId!)?.unfocus();
-      }
-
-      placeOnTop(id);
-      draggableControllerRefs.current.get(id)?.center(containerRef.current!, 1);
-
-      if (!target?.dragging) {
-        setSelectedCardId(id);
-
-        selectedCardIdRef.current = id;
-        selectedCardContainerRef.current = target?.e ?? null;
-
-        draggableContainerRefs.current.get(id)?.e?.focus();
-      }
-    },
-    [
-      draggableContainerRefs,
-      draggableControllerRefs,
-      containerRef,
-      setSelectedCardId,
-      placeOnTop,
-    ]
-  );
-  // biome-ignore lint/correctness/useExhaustiveDependencies: shh!
-  const handleDeselectCard = useCallback(
-    (e?: React.MouseEvent<HTMLDivElement>) => {
-      if (!selectedCardIdRef.current) {
-        return;
-      }
-
-      store.reset();
-
-      const focused = selectedCardIdRef?.current;
-      if (focused) {
-        draggableControllerRefs.current.get(focused!)?.unfocus();
-        selectedCardIdRef.current = null;
-
-        placeOnTop(focused!);
-      }
-    },
-    [store, draggableControllerRefs, placeOnTop]
-  );
-
   // biome-ignore lint/correctness/useExhaustiveDependencies: shh!
   const handleDragContainerRef = useCallback(
     (e: HTMLElement | null) => {
@@ -532,60 +465,6 @@ export default function Home() {
     },
     [draggableControllerRefs]
   );
-
-  const handleCardClick = useCallback(
-    (e: React.MouseEvent<HTMLDivElement>) => {
-      const id = getIdAttribute(e.currentTarget);
-      if (id === null || id === selectedCardId) {
-        return;
-      }
-
-      if (e.target !== e.currentTarget) {
-        return;
-      }
-
-      e.stopPropagation();
-
-      handleSelectCard(id);
-    },
-    [handleSelectCard, store, selectedCardId]
-  );
-
-  const handleContainerClick = useCallback(
-    (e: React.MouseEvent<HTMLDivElement>) => {
-      if (e.target === e.currentTarget) {
-        handleDeselectCard();
-      }
-    },
-    [handleDeselectCard]
-  );
-
-  const handleListFocus = useCallback(
-    (e: React.FocusEvent<HTMLDivElement>) => {
-      if (e.target !== cardsContainerRef.current) {
-        return;
-      }
-
-      const firstId = focusedCardIdRef.current ?? cards[0]?.id ?? null;
-      focusById(firstId);
-
-      if (cardsContainerRef.current) {
-        cardsContainerRef.current.tabIndex = -1;
-      }
-    },
-    [focusById, cards]
-  );
-
-  const handleListBlur = useCallback((e: React.FocusEvent<HTMLDivElement>) => {
-    const related = e.relatedTarget;
-
-    if (!cardsContainerRef.current) {
-      return;
-    }
-    if (!(related && cardsContainerRef.current.contains(related))) {
-      cardsContainerRef.current.tabIndex = 0;
-    }
-  }, []);
 
   return (
     <div className="min-h-dvh">
@@ -673,23 +552,13 @@ export default function Home() {
           </Grid.System>
 
           <div className="absolute inset-0">
-            {/** biome-ignore lint/a11y/noNoninteractiveElementInteractions: shh! */}
-            {/** biome-ignore lint/a11y/noStaticElementInteractions: shh! */}
-            {/** biome-ignore lint/a11y/useKeyWithClickEvents: shh! */}
             <div
               className={cx("relative row-2 flex h-full items-start sm:row-1")}
-              onClick={handleContainerClick}
               ref={containerRef}
             >
-              {/** biome-ignore lint/a11y/noNoninteractiveElementInteractions: shh! */}
               <div
-                aria-label={`${collectionKey} cards List`}
                 className="pointer-events-none absolute inset-0 transform-gpu focus-visible:outline-none"
-                onBlur={handleListBlur}
-                onFocus={handleListFocus}
                 ref={cardsContainerRef}
-                role="list"
-                tabIndex={0}
               >
                 <div
                   aria-hidden="true"
@@ -725,9 +594,8 @@ export default function Home() {
                       dragTransition={cardDragTransition}
                       id={card.id}
                       index={index}
-                      initial={cardInitial}
+                      initial={{ ...cardInitial }}
                       key={card.id}
-                      onClick={handleCardClick}
                       onDragEnd={handleDragEnd}
                       onDragStart={handleDragStart}
                       onDragTransitionEnd={handleDragTransitionEnd}
@@ -744,13 +612,10 @@ export default function Home() {
                             : "pointer-events-none"
                         )}
                       >
-                        <div className="flex h-0 w-full items-center justify-between overflow-hidden px-1 opacity-0 transition-[height,opacity] duration-200 group-hover:h-4.5 group-hover:opacity-100">
+                        <div className="pointer-events-auto flex h-0 w-full items-center justify-between overflow-hidden px-1 opacity-0 transition-[height,opacity] duration-200 group-hover:h-4.5 group-hover:opacity-100">
                           <h3 className="text-12 uppercase">{card.title}</h3>
                           {collectionKey === "prototypes" && (
-                            <Link
-                              href={`/craft/${card.slug}`}
-                              onClick={() => handleDeselectCard()}
-                            >
+                            <Link href={`/craft/${card.slug}`}>
                               <span className="ml-auto block">
                                 <ArrowTopRightIcon />
                               </span>
@@ -765,51 +630,31 @@ export default function Home() {
                               : "pointer-events-none"
                           )}
                         >
-                          {card.src ? (
-                            <Image
-                              alt={card.title || ""}
-                              className={cx(
-                                "pointer-events-none h-auto w-[calc(var(--size-scale)*var(--width)*1px)] object-contain object-center drop-shadow transition-all duration-200"
-                              )}
-                              data-slot="card-image"
-                              height={getCardSize(card).height}
-                              loading="eager"
-                              priority
-                              src={card.src}
-                              style={
-                                {
-                                  "--width": getCardSize(card).width,
-                                  "--height": getCardSize(card).height,
-                                  "--size-scale": isMobileSmall
-                                    ? 0.6
-                                    : // biome-ignore lint/style/noNestedTernary: shh!
-                                      isMobile
-                                      ? 0.8
-                                      : 1,
-                                } as CSSProperties
-                              }
-                              width={getCardSize(card).width}
-                            />
-                          ) : (
-                            <div
-                              className={cx(
-                                "pointer-events-none h-auto w-[calc(var(--size-scale)*var(--width)*1px)] bg-gray-1 object-contain object-center drop-shadow transition-all duration-200"
-                              )}
-                              style={
-                                {
-                                  "--width": getCardSize(card).width,
-                                  "--height": getCardSize(card).height,
-                                  "--size-scale": isMobileSmall
-                                    ? 0.6
-                                    : // biome-ignore lint/style/noNestedTernary: shh!
-                                      isMobile
-                                      ? 0.8
-                                      : 1,
-                                  height: `${getCardSize(card).height}px`,
-                                } as CSSProperties
-                              }
-                            />
-                          )}
+                          <Image
+                            alt={card.title || ""}
+                            className={cx(
+                              "pointer-events-none h-auto w-[calc(var(--size-scale)*var(--width)*1px)] object-contain object-center drop-shadow transition-all duration-200"
+                            )}
+                            data-slot="card-image"
+                            height={getCardSize(card).height}
+                            loading="eager"
+                            priority
+                            src={card.src}
+                            style={
+                              {
+                                "--width": getCardSize(card).width,
+                                "--height": getCardSize(card).height,
+                                "--size-scale": isMobileSmall
+                                  ? 0.6
+                                  : // biome-ignore lint/style/noNestedTernary: shh!
+                                    isMobile
+                                    ? 0.8
+                                    : 1,
+                              } as CSSProperties
+                            }
+                            width={getCardSize(card).width}
+                          />
+
                           {resizingCardId === card.id && (
                             <span
                               aria-live="polite"
@@ -822,10 +667,9 @@ export default function Home() {
                         </div>
                       </div>
                       <button
-                        aria-label={`Resize ${card.title ?? "card"}`}
                         className="pointer-events-auto absolute right-0 bottom-0 z-10 scale-50 cursor-nwse-resize opacity-0 transition-[transform,opacity] duration-200 group-hover:scale-100 group-hover:opacity-100"
                         onPointerDown={(e) => handleResizeStart(e, card.id)}
-                        role="button"
+                        type="button"
                       >
                         <CornerBottomRightIcon />
                       </button>
