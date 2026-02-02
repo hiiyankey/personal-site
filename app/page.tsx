@@ -747,7 +747,10 @@ export default function Home() {
                         <div className="flex h-0 w-full items-center justify-between overflow-hidden px-1 opacity-0 transition-[height,opacity] duration-200 group-hover:h-4.5 group-hover:opacity-100">
                           <h3 className="text-12 uppercase">{card.title}</h3>
                           {collectionKey === "prototypes" && (
-                            <Link href={`/craft/${card.slug}`}>
+                            <Link
+                              href={`/craft/${card.slug}`}
+                              onClick={() => handleDeselectCard()}
+                            >
                               <span className="ml-auto block">
                                 <ArrowTopRightIcon />
                               </span>
