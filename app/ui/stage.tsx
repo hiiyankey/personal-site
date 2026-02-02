@@ -1,4 +1,5 @@
 "use client";
+import { InfoCircledIcon } from "@radix-ui/react-icons";
 import { cx, useIsMobile } from "@/lib/utils";
 
 export function Stage({ children, className }: React.ComponentProps<"div">) {
@@ -6,12 +7,21 @@ export function Stage({ children, className }: React.ComponentProps<"div">) {
   return (
     <div
       className={cx(
-        "h-80 flex-center rounded-12 bg-gray-2 shadow-border-inset",
+        "flex-center rounded-12 bg-gray-2 px-8 py-16 shadow-border-inset",
         className
       )}
       data-stage
     >
-      {isMobile ? "Use desktop only" : children}
+      {isMobile ? (
+        <p className="flex items-center whitespace-nowrap rounded-6 bg-red/6 px-3 py-1 text-14 text-red">
+          <span className="mr-2">
+            <InfoCircledIcon />
+          </span>
+          Use desktop only
+        </p>
+      ) : (
+        children
+      )}
     </div>
   );
 }

@@ -1,3 +1,4 @@
+import { ResetIcon } from "@radix-ui/react-icons";
 import Link from "next/link";
 import { collections } from "@/lib/constants";
 import type { Card } from "@/lib/models";
@@ -23,6 +24,14 @@ export default async function Page({
     <div className="min-h-dvh">
       <main>
         <Container className="py-40">
+          <div className="mb-8">
+            <Link className="flex items-center text-14 text-gray-11" href="/">
+              <span className="mr-2">
+                <ResetIcon />
+              </span>{" "}
+              Back
+            </Link>
+          </div>
           <div className="mb-8 flex items-center gap-2">
             <h3 className="text-gray-11">{card.title}</h3>
             <div className="size-1 rounded-full bg-gray-9" />
