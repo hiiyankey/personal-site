@@ -75,7 +75,7 @@ export function ElasticSlider() {
               clientX.set(e.clientX);
             }
           }}
-          onVolumeChange={([v]) => setVolume(v)}
+          onValueChange={([v]) => setVolume(v)}
           ref={rootRef}
           step={1}
         >
