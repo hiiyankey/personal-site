@@ -639,7 +639,7 @@ export default function Home() {
                             height={getCardSize(card).height}
                             loading="eager"
                             priority
-                            src={card.src}
+                            src={card.src as string}
                             style={
                               {
                                 "--width": getCardSize(card).width,
