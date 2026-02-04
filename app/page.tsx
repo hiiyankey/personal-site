@@ -10,7 +10,6 @@ import {
   type PanInfo,
   type Transition,
 } from "motion/react";
-import Image from "next/image";
 import Link from "next/link";
 import {
   type CSSProperties,
@@ -31,6 +30,7 @@ import { Container } from "@/ui/container";
 import type { DraggableController } from "@/ui/draggable";
 import Draggable from "@/ui/draggable";
 import { Grid } from "@/ui/grid/grid";
+import { Video } from "./ui/video";
 
 interface DragContainerRef {
   e: HTMLElement;
@@ -528,9 +528,11 @@ export default function Home() {
           <h3 className="mb-6 text-24 leading-28">Hello</h3>
           <div className="flex flex-col space-y-4">
             <p className="text-18 leading-[auto]">
-              My name is Emmanuel. I work as a Design Engineer crafting details
-              and many things on screens like design system, marketing pages.
-              Focused on honing my craft through
+              My name is Emmanuel. I work as a design engineer focused on:
+              motion, color, interactions, sound effects, haptics, playful
+              transitions, and the like. crafting the gestures, transitions and
+              details. building fluid animations and custom transitions on
+              things for screens.
             </p>
             <p className="text-18 leading-[auto]">
               When not coding, I write design essays, remix and prototype
@@ -630,15 +632,18 @@ export default function Home() {
                               : "pointer-events-none"
                           )}
                         >
-                          <Image
-                            alt={card.title || ""}
+                          <Video
+                            // alt={card.title || ""}
+                            autoPlay
                             className={cx(
                               "pointer-events-none h-auto w-[calc(var(--size-scale)*var(--width)*1px)] object-contain object-center drop-shadow transition-all duration-200"
                             )}
-                            data-slot="card-image"
+                            data-slot="card-video"
                             height={getCardSize(card).height}
-                            loading="eager"
-                            priority
+                            loop
+                            muted
+                            // loading="eager"
+                            // priority
                             src={card.src as string}
                             style={
                               {
