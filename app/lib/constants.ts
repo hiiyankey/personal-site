@@ -1,4 +1,5 @@
 import { ElasticSlider } from "@/ui/prototypes/elastic-slider";
+import { Demo } from "@/ui/prototypes/ios-menu/demo";
 
 export const baseCollections = {
   prototypes: {
@@ -18,10 +19,11 @@ export const baseCollections = {
       },
       {
         year: "1959-03-06",
-        title: "Motion Blur",
+        title: "iOS Menu",
         src: "/wheel.mp4",
         width: 290,
         height: 170,
+        content: Demo,
       },
       {
         year: "2026-02-02",
