@@ -3,6 +3,8 @@
 import {
   ArrowTopRightIcon,
   CornerBottomRightIcon,
+  ReloadIcon,
+  StackIcon,
 } from "@radix-ui/react-icons";
 import {
   type MotionProps,
@@ -497,31 +499,6 @@ export default function Home() {
           </clipPath>
           <rect fill="url(#pattern0)" height="100%" width="100%" x="0" y="0" />
         </svg>
-        <motion.nav
-          className="translate-center-x fixed bottom-6 z-50 flex h-9 w-28 items-center rounded-full bg-gray-2 p-2 shadow-border-large"
-          drag="x"
-          dragConstraints={{ left: 0, right: 0 }}
-        >
-          <div className="size-5 rounded-full bg-orange" />
-          <div className="ml-auto flex items-center gap-1">
-            <motion.button
-              className="size-6 flex-center select-none rounded-full bg-gray-3"
-              onClick={() => handleSpreadOut({ stagger: 5 })}
-              type="button"
-              whileTap={{ scale: 0.96 }}
-            >
-              +
-            </motion.button>
-            <motion.button
-              className="size-6 flex-center select-none rounded-full bg-gray-3"
-              onClick={handleOrganize}
-              type="button"
-              whileTap={{ scale: 0.96 }}
-            >
-              -
-            </motion.button>
-          </div>
-        </motion.nav>
       </header>
       <main>
         <Container className="mb-16 pt-24">
@@ -558,6 +535,30 @@ export default function Home() {
               className={cx("relative row-2 flex h-full items-start sm:row-1")}
               ref={containerRef}
             >
+              <motion.div
+                className="absolute top-4 right-12 z-50 flex h-9 items-center rounded-full bg-gray-2 p-1 shadow-border-large"
+                drag="x"
+                dragConstraints={{ left: 0, right: 0 }}
+              >
+                <div className="flex items-center gap-1">
+                  <motion.button
+                    className="size-6 flex-center cursor-pointer select-none rounded-full bg-gray-4"
+                    onClick={() => handleSpreadOut({ stagger: 5 })}
+                    type="button"
+                    whileTap={{ scale: 0.96 }}
+                  >
+                    <ReloadIcon />
+                  </motion.button>
+                  <motion.button
+                    className="size-6 flex-center cursor-pointer select-none rounded-full bg-gray-4"
+                    onClick={handleOrganize}
+                    type="button"
+                    whileTap={{ scale: 0.96 }}
+                  >
+                    <StackIcon />
+                  </motion.button>
+                </div>
+              </motion.div>
               <div
                 className="pointer-events-none absolute inset-0 transform-gpu focus-visible:outline-none"
                 ref={cardsContainerRef}

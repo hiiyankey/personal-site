@@ -63,7 +63,7 @@ export function SubMenuTrigger({
       } else if (e.key === "ArrowRight" && !isActive) {
         e.preventDefault();
         setActiveSubmenu(id);
-      } else if ((e.key === "ArrowLeft" || e.key === "Escape") && !isActive) {
+      } else if ((e.key === "ArrowLeft" || e.key === "Escape") && isActive) {
         e.preventDefault();
         setActiveSubmenu(null);
       }
@@ -75,7 +75,6 @@ export function SubMenuTrigger({
   return (
     <motion.button
       animate={{ scale: isActive ? openScale : 1 }}
-      tabIndex={disabled ? -1 : 0}
       aria-disabled={disabled || undefined}
       aria-expanded={isActive}
       aria-haspopup="menu"
@@ -97,6 +96,7 @@ export function SubMenuTrigger({
         zIndex: isElevated ? 20 : undefined,
         userSelect: "none",
       }}
+      tabIndex={disabled ? -1 : 0}
       transition={springConfig}
     >
       {content}

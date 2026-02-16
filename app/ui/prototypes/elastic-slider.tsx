@@ -2,6 +2,7 @@
 
 import { SpeakerLoudIcon, SpeakerQuietIcon } from "@radix-ui/react-icons";
 import { Range, Root, Track } from "@radix-ui/react-slider";
+import { useDialKit } from "dialkit";
 import {
   animate,
   motion,
@@ -20,6 +21,13 @@ export function ElasticSlider() {
   const clientX = useMotionValue(0);
   const overflow = useMotionValue(0);
   const scale = useMotionValue(1);
+
+  const p = useDialKit("Slider", {
+    blur: [24, 0, 100],
+    // scale: 1.2,
+    color: "#ff5500",
+    visible: true,
+  });
 
   useMotionValueEvent(clientX, "change", (latest) => {
     if (rootRef.current) {
@@ -46,7 +54,13 @@ export function ElasticSlider() {
         className="flex max-w-sm items-center gap-3"
         onHoverEnd={() => animate(scale, 1)}
         onHoverStart={() => animate(scale, 1.2)}
-        style={{ scale }}
+        style={{
+          filter: `blur(${p.blur}px)`,
+          // transform: `scale(${p.scale})`,
+          color: p.color,
+          opacity: p.visible ? 1 : 0,
+          scale,
+        }}
       >
         <motion.span
           animate={{

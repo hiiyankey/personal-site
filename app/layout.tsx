@@ -1,7 +1,9 @@
 import type { Metadata } from "next";
 import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
+import { DialRoot } from "dialkit";
 import { ThemeProvider } from "./hooks/use-theme/use-theme";
+import "dialkit/styles.css";
 
 const geistSans = Geist({
   variable: "--font-geist-sans",
@@ -28,7 +30,9 @@ export default function RootLayout({
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
       >
-        <ThemeProvider>{children}</ThemeProvider>
+        <ThemeProvider>
+          {children} <DialRoot />
+        </ThemeProvider>
       </body>
     </html>
   );
