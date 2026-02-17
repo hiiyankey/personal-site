@@ -506,10 +506,9 @@ export default function Home() {
           <div className="flex flex-col space-y-4">
             <p className="text-18 leading-[auto]">
               My name is Emmanuel. I work as a design engineer focused on:
-              motion, color, interactions, sound effects, haptics, playful
-              transitions, and the like. crafting the gestures, transitions and
-              details. building fluid animations and custom transitions on
-              things for screens.
+              motion, color, interactions the like. crafting the gestures,
+              transitions and details. building fluid animations and custom
+              transitions on things for screens.
             </p>
             <p className="text-18 leading-[auto]">
               When not coding, I write design essays, remix and prototype
