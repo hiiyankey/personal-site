@@ -33,6 +33,7 @@ import type { DraggableController } from "@/ui/draggable";
 import Draggable from "@/ui/draggable";
 import { Grid } from "@/ui/grid/grid";
 import { Video } from "./ui/video";
+import { Tooltip } from "./ui/primitives/tooltip";
 
 interface DragContainerRef {
   e: HTMLElement;
@@ -505,14 +506,14 @@ export default function Home() {
           <h3 className="mb-6 text-24 leading-28">Hello</h3>
           <div className="flex flex-col space-y-4">
             <p className="text-18 leading-[auto]">
-              My name is Emmanuel. I work as a design engineer focused on:
-              motion, color, interactions the like. crafting the gestures,
-              transitions and details. building fluid animations and custom
-              transitions on things for screens.
+                 My name is Rauno. I work as a Staff Design Engineer at Vercel on our platform, design system, marketing pages, and Next.js Dev Tools. Previously, I was at The Browser Company designing and building the Arc browser.
+
             </p>
             <p className="text-18 leading-[auto]">
-              When not coding, I write design essays, remix and prototype
-              interactions for apps on the web.
+              I have written acclaimed design essays like Invisible Details of Interaction Design and shipped open source software like cmdk that is downloaded millions of times per week to power command menu interfaces for the most modern productivity apps on the web.
+            </p>
+            <p className="text-18 leading-[auto]">
+      Marketing-centric design engineers focus on the marketing website or public facing projects often using  advanced CSS and  WebGL techniques.
             </p>
           </div>
         </Container>
@@ -540,6 +541,8 @@ export default function Home() {
                 dragConstraints={{ left: 0, right: 0 }}
               >
                 <div className="flex items-center gap-1">
+
+
                   <motion.button
                     className="size-6 flex-center cursor-pointer select-none rounded-full bg-gray-4"
                     onClick={() => handleSpreadOut({ stagger: 5 })}
@@ -548,6 +551,7 @@ export default function Home() {
                   >
                     <ReloadIcon />
                   </motion.button>
+
                   <motion.button
                     className="size-6 flex-center cursor-pointer select-none rounded-full bg-gray-4"
                     onClick={handleOrganize}
